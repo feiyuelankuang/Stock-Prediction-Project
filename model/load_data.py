@@ -4,7 +4,7 @@ import pandas as pd
 import math
 import datetime
 from dateutil.relativedelta import *
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import OneHotEncoder
 from csv import writer
 
 def load_data(data_dir):
@@ -19,11 +19,19 @@ def load_data(data_dir):
         df = df.fillna(method='ffill') # Fill data with previous day's -> Avoid lookahead bias
 
         if index == 0:
-            ts_data = np.zeros([len(ticker_files), df.shape[0] - 1, df.shape[1]], dtype=np.float32) # Timeseries Shape: ??? days * 6 features
-            gt_data = np.zeros([len(ticker_files), df.shape[0] - 1],  dtype=np.float32) # Ground Truth Shape: ??? days * 1 (close price)
+            ts_data = np.zeros([len(ticker_files), df.shape[0] - 1, df.shape[1]], dtype=np.float32)
+            gt_data = np.zeros([len(ticker_files), df.shape[0] - 1, 2], dtype=np.float32)
 
+        # Timeseries: No. of days x 6 features
         ts_data[index, :, :] = df[:-1]
-        gt_data[index, :] = df[1:][2]
+
+        # Ground Truth: No. of days x 2 (Up or Down)
+        delta_data = df[2].pct_change()[1:]
+        delta_data[delta_data < 0] = 0 # Loss is 0
+        delta_data[delta_data > 0] = 1 # Gain is 1
+        ohe = OneHotEncoder(categories = "auto", sparse = False)
+        delta_data = ohe.fit_transform(pd.DataFrame(delta_data))
+        gt_data[index, :, :] = delta_data
 
     return ts_data, gt_data
 
