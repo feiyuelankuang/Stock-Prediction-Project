@@ -17,5 +17,12 @@ bin-release/
 # should NOT be excluded as they contain compiler settings and other important
 # information for Eclipse / Flash Builder.
 
-# Notebook checkpoints
+# Cached files
 .ipynb_checkpoints
+__pycache__/
+
+# Mac-generated file
+.DS_Store
+
+# TransE data (download from https://github.com/thunlp/KB2E)
+TransE/data/*
