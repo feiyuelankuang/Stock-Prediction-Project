@@ -8,19 +8,19 @@ import math
 import time
 from tensorflow.python.ops.nn_ops import leaky_relu
 
-class LSTM:
+class model:
     def __init__(self, data_dir, kg_dir, parameters):
         self.parameters = parameters
         self.ts_data, self.gt_data = load_data(data_dir)
         # self.kg_data = load_kg_embeddings(kg_dir)
+        self.kg_data = np.zeros(self.ts_data.shape)
 
         self.batch_size = self.ts_data.shape[0] # Fixed batch size (can be changed)
         self.valid_index = math.ceil(self.ts_data.shape[0] * 0.6) # 60-20-20 Split
         self.test_index = math.ceil(self.ts_data.shape[0] * 0.8)
 
     def get_batch(self, batch_index):
-        # return self.ts_data[:, batch_index, :], self.kg_data[:, batch_index, :], self.gt_data[:, batch_index]
-        return self.ts_data[:, batch_index, :], np.zeros(self.batch_size, 1, self.kg_data.shape[2]), self.gt_data[:, batch_index]
+        return self.ts_data[:, batch_index, :], self.kg_data[:, batch_index, :], self.gt_data[:, batch_index]
 
     def train(self):
         # device_name = '/cpu:0'
@@ -30,26 +30,21 @@ class LSTM:
         with tf.device(device_name):
             tf.reset_default_graph()
 
-            lstm_feature = tf.placeholder(tf.float32, [self.batch_size, 1, self.ts_data.shape[2]])
-            kg_feature = tf.placeholder(tf.float32, [self.batch_size, 1, self.kg_data.shape[2]])
-            ground_truth = tf.placeholder(tf.float32, [self.batch_size, 1])
+            ts_feature = tf.placeholder(tf.float32, [self.batch_size, self.ts_data.shape[2]])
+            kg_feature = tf.placeholder(tf.float32, [self.batch_size, self.kg_data.shape[2]])
+            ground_truth = tf.placeholder(tf.float32, [self.batch_size])
 
-            # LSTM Layer
-            lstm_cell = tf.contrib.rnn.BasicLSTMCell(self.parameters['hidden_units'])
-            initial_state = lstm_cell.zero_state(self.batch_size, dtype=tf.float32)
-            outputs, _ = tf.nn.dynamic_rnn(lstm_cell, lstm_feature, dtype=tf.float32, initial_state=initial_state)
-
-            # LSTM embeddings
-            lstm_embedding = tf.layers.dense(outputs[:, :5, :], units=1, activation=leaky_relu, kernel_regularizer=tf.glorot_uniform_initializer())
+            # TS embeddings
+            ts_embedding = tf.layers.dense(ts_feature, units=1, activation=leaky_relu)
 
             # # KG embeddings
-            # kg_embedding = tf.layers.dense(kg_feature, units=16, activation=leaky_relu, kernel_regularizer=tf.glorot_uniform_initializer())
+            # kg_embedding = tf.layers.dense(kg_feature, units=16, activation=leaky_relu)
 
-            # # LSTM + KG embeddings
+            # # TS + KG embeddings
             # kg_feature = tf.reshape(kg_feature, [self.batch_size, 16])
-            # stock_embedding = tf.layers.dense(tf.concat([lstm_embedding, kg_embedding], axis=1), units=1, activation=leaky_relu, kernel_regularizer=tf.glorot_uniform_initializer())
+            # stock_embedding = tf.layers.dense(tf.concat([lstm_embedding, kg_embedding], axis=1), units=1, activation=leaky_relu)
 
-            prediction = lstm_embedding
+            prediction = ts_embedding[:, -1]
 
             # Loss
             loss = tf.losses.mean_squared_error(ground_truth, prediction)
@@ -77,7 +72,7 @@ class LSTM:
                 ts_batch, kg_batch, gt_batch = self.get_batch(batch_index[i])
 
                 feed_dict = {
-                    lstm_feature: ts_batch,
+                    ts_feature: ts_batch,
                     kg_feature: kg_batch,
                     ground_truth: gt_batch
                 }
@@ -96,7 +91,7 @@ class LSTM:
                 ts_batch, kg_batch, gt_batch = self.get_batch(i)
 
                 feed_dict = {
-                    lstm_feature: ts_batch,
+                    ts_feature: ts_batch,
                     kg_feature: kg_batch,
                     ground_truth: gt_batch
                 }
@@ -117,7 +112,7 @@ class LSTM:
                 ts_batch, kg_batch, gt_batch = self.get_batch(i)
 
                 feed_dict = {
-                    lstm_feature: ts_batch,
+                    ts_feature: ts_batch,
                     kg_feature: kg_batch,
                     ground_truth: gt_batch
                 }

@@ -1,5 +1,5 @@
 import argparse
-from lstm import LSTM
+from model import model
 
 def main():
     ### Parse arguments here ###
@@ -8,12 +8,12 @@ def main():
     parameters = {'hidden_units': 16, 'lr': 0.001, 'epochs': 10}
     ### Parse arguments here ###
 
-    lstm_model = LSTM(
+    test_model = model(
         data_dir = data_dir,
         kg_dir = kg_dir,
         parameters=parameters
     )
-    lstm_model.train()
+    test_model.train()
 
 if __name__ == '__main__':
     main()
