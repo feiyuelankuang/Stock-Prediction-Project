@@ -26,3 +26,6 @@ __pycache__/
 
 # TransE data (download from https://github.com/thunlp/KB2E)
 TransE/data/*
+
+# Google News dataset model
+data/GoogleNews-vectors-negative300.bin
