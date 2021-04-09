@@ -2,7 +2,7 @@
 
 One Paragraph of project description goes here
 
-## report
+## Report
 report can be edit here https://www.overleaf.com/6175999788qykjydxqwhkb
 
 ## Getting Started
