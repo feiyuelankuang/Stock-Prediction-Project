@@ -1,13 +1,13 @@
 import csv
 import re
 from string import digits
-filename = 'walmart_news_CNN'
-
-
-
+filename = 'apple_reuters'
 
 def clean_triple(str):
-	return re.sub(':','',str).strip()
+	str = re.sub(':','',str).strip()
+	if str[-2:] == 'TZ':
+	    str = str[:-2].strip()
+	return str
 
 def extract_triple(list):
 	str = ''
@@ -53,7 +53,7 @@ def select_triple(list_tuple, thres = 0.8):
 with open(filename + '_processed.csv', 'a') as csvfile:
     #writer.writerow('news','date','confidence','agent','predicate','object')
     writer = csv.writer(csvfile)
-    with open(filename +'_result.csv', newline='') as csvfile2:
+    with open(filename +'_result.csv', newline='',encoding="utf8") as csvfile2:
         spamreader = csv.reader(csvfile2, delimiter=',')
         for row in spamreader:
             if len(row) == 2 and row[1][:4].isdigit():
