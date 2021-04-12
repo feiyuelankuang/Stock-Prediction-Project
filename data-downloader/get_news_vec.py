@@ -23,6 +23,7 @@ for file in os.listdir('../data/News Triple/'):
 
         for index, row in news_df.iterrows():
             txt = row.content
+            print(row.time) # BUG: Please fix
 
             # # Remove the first 'b'
             # txt = txt[1:]
@@ -35,11 +36,6 @@ for file in os.listdir('../data/News Triple/'):
             txt = ' '.join(resultwords)
 
             # Add to DataFrame
-            # arr = np.array([model[x] for x in txt.split(' ') if x is not ''])
-            # if arr.shape[0] == 0:
-            #     arr = np.zeros([23, 300])
-            #
-            # arr = np.pad(arr, ((0, 23 - arr.shape[0]), (0,0)), 'constant')
             vec_df = vec_df.append({"vec": [model[x] for x in txt.split(' ') if x is not ''], "time": row.time}, ignore_index=True)
 
         vec_df.to_pickle('../data/news_vectors/' + filename + '.pkl')
