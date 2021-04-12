@@ -1,5 +1,6 @@
 from gensim.models import KeyedVectors
 import pandas as pd
+import numpy as np
 import os
 import string
 import pickle
@@ -8,9 +9,13 @@ import pickle
 model = KeyedVectors.load_word2vec_format('../data/GoogleNews-vectors-negative300.bin', binary=True)
 
 # Loop through folder
-for file in os.listdir('../data/Final_News/'):
-    if file.endswith('.csv'):
-        news_df = pd.read_csv('../data/Final_News/' + file, header=None)
+for file in os.listdir('../data/News_Triple/'):
+    if file.endswith('processed.csv'):
+        news_df = pd.read_csv('../data/News_Triple/' + file, header=None)
+
+        news_df = news_df.drop(news_df.columns[2], axis=1)
+        news_df = news_df.drop(news_df.columns[3], axis=1)
+
         news_df.rename(columns={0: "content", 1: "time"}, inplace=True)
 
         filename = file.split('.')[0]
@@ -30,7 +35,11 @@ for file in os.listdir('../data/Final_News/'):
             txt = ' '.join(resultwords)
 
             # Add to DataFrame
+            # arr = np.array([model[x] for x in txt.split(' ') if x is not ''])
+            # if arr.shape[0] == 0:
+            #     arr = np.zeros([23, 300])
+            #
+            # arr = np.pad(arr, ((0, 23 - arr.shape[0]), (0,0)), 'constant')
             vec_df = vec_df.append({"vec": [model[x] for x in txt.split(' ') if x is not ''], "time": row.time}, ignore_index=True)
 
-        # vec_df.to_csv('../data/news_vectors/' + file, index=False)
         vec_df.to_pickle('../data/news_vectors/' + filename + '.pkl')

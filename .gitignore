@@ -24,8 +24,9 @@ __pycache__/
 # Mac-generated file
 .DS_Store
 
-# TransE data (download from https://github.com/thunlp/KB2E)
-TransE/data/*
-
 # Google News dataset model
 data/GoogleNews-vectors-negative300.bin
+
+# Unused data
+data/CNN_news/
+data/Reuters_news/

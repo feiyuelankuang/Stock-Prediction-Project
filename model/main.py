@@ -1,5 +1,5 @@
 import argparse
-from model import model
+from model import LSTM
 
 def main():
     ### Parse arguments here ###

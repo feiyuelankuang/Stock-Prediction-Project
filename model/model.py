@@ -12,7 +12,11 @@ class LSTM:
     def __init__(self, ts_dir, vec_dir, kg_dir, parameters):
         self.parameters = parameters
         self.ts_data, self.gt_data = load_ts_data(ts_dir)
-        # self.vec_data = load_vec_data(vec_dir)
+        self.vec_data = load_vec_data(vec_dir)
+
+        print(self.ts_data.shape)
+        print(self.vec_data.shape)
+
         # self.kg_data = load_kg_data(kg_dir)
         self.kg_data = np.zeros(self.ts_data.shape)
 
@@ -21,7 +25,7 @@ class LSTM:
         self.test_index = math.ceil(self.ts_data.shape[1] * 0.8)
 
     def get_batch(self, batch_index):
-        return self.ts_data[:, batch_index, :], self.kg_data[:, batch_index, :], self.gt_data[:, batch_index]
+        return self.ts_data[:, batch_index, :], self.vec_data[:, batch_index, :, :], self.kg_data[:, batch_index, :], self.gt_data[:, batch_index]
 
     def train(self):
         # device_name = '/cpu:0'
@@ -32,7 +36,7 @@ class LSTM:
             tf.reset_default_graph()
 
             ts_feature = tf.placeholder(tf.float32, [self.batch_size, self.ts_data.shape[2]])
-            vec_feature = tf.placeholder(tf.float32, [self.batch_size, None])
+            vec_feature = tf.placeholder(tf.float32, [self.batch_size, self.vec_data.shape[2], self.vec_data.shape[3]])
             kg_feature = tf.placeholder(tf.float32, [self.batch_size, self.kg_data.shape[2]])
             ground_truth = tf.placeholder(tf.float32, [self.batch_size, 2])
 
@@ -71,10 +75,11 @@ class LSTM:
             train_loss = 0.0
 
             for i in range(0, self.valid_index):
-                ts_batch, kg_batch, gt_batch = self.get_batch(batch_index[i])
+                ts_batch, vec_batch, kg_batch, gt_batch = self.get_batch(batch_index[i])
 
                 feed_dict = {
                     ts_feature: ts_batch,
+                    vec_feature: vec_batch,
                     kg_feature: kg_batch,
                     ground_truth: gt_batch
                 }
@@ -90,10 +95,11 @@ class LSTM:
             val_acc = 0.0
 
             for i in range(self.valid_index, self.test_index):
-                ts_batch, kg_batch, gt_batch = self.get_batch(i)
+                ts_batch, vec_batch, kg_batch, gt_batch = self.get_batch(i)
 
                 feed_dict = {
                     ts_feature: ts_batch,
+                    vec_feature: vec_batch,
                     kg_feature: kg_batch,
                     ground_truth: gt_batch
                 }
@@ -111,10 +117,11 @@ class LSTM:
             test_batch = 0
 
             for i in range(self.test_index, self.ts_data.shape[1]):
-                ts_batch, kg_batch, gt_batch = self.get_batch(i)
+                ts_batch, vec_batch, kg_batch, gt_batch = self.get_batch(i)
 
                 feed_dict = {
                     ts_feature: ts_batch,
+                    vec_feature: vec_batch,
                     kg_feature: kg_batch,
                     ground_truth: gt_batch
                 }

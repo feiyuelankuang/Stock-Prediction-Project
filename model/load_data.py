@@ -7,20 +7,19 @@ from dateutil.relativedelta import *
 from sklearn.preprocessing import OneHotEncoder
 from csv import writer
 
+ticker_list = ['AAPL', 'BA', 'GOOG', 'MSFT', 'WMT']
+
 def load_ts_data(ts_dir):
-    for (_, _, filename) in os.walk(ts_dir):
-        ticker_files = filename
+    for index, ticker in enumerate(ticker_list):
+        print('Loading Ticker ' + str(index+1) + '/' + str(len(ticker_list)) + '...')
 
-    for index, ticker_file in enumerate(ticker_files):
-        print('Loading Ticker ' + str(index+1) + '/' + str(len(ticker_files)) + '...')
-
-        df = pd.read_csv(data_dir + '/' + ticker_file, index_col=0, header=None)
+        df = pd.read_csv(ts_dir + '/' + ticker + '.csv', index_col=0, header=None)
         df.index = pd.to_datetime(df.index)
         df = df.fillna(method='ffill') # Fill data with previous day's -> Avoid lookahead bias
 
         if index == 0:
-            ts_data = np.zeros([len(ticker_files), df.shape[0] - 1, df.shape[1]], dtype=np.float32)
-            gt_data = np.zeros([len(ticker_files), df.shape[0] - 1, 2], dtype=np.float32)
+            ts_data = np.zeros([len(ticker_list), df.shape[0] - 1, df.shape[1]], dtype=np.float32)
+            gt_data = np.zeros([len(ticker_list), df.shape[0] - 1, 2], dtype=np.float32)
 
         # Timeseries: No. of days x 6 features
         ts_data[index, :, :] = df[:-1]
@@ -36,8 +35,10 @@ def load_ts_data(ts_dir):
     return ts_data, gt_data
 
 def load_vec_data(vec_dir):
-    
+    with open('../data/news_vectors/vec.npy', 'rb') as f:
+        vec_data = np.load(f)
 
+    return vec_data
 
-def load_kg_embeddings(kg_dir):
+def load_kg_data(kg_dir):
     pass
