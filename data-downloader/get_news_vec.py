@@ -20,7 +20,7 @@ for file in os.listdir('../data/News Triple/'):
             txt = row.content
 
             # Remove the first 'b'
-            txt = txt[1:]
+            #txt = txt[1:]
 
             # Remove punctuation
             txt = txt.translate(str.maketrans('', '', string.punctuation))
