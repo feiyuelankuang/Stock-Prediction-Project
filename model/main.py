@@ -3,17 +3,19 @@ from model import model
 
 def main():
     ### Parse arguments here ###
-    data_dir = '../data/timeseries_data'
+    ts_dir = '../data/timeseries_data'
+    vec_dir = '../data/news_vectors'
     kg_dir = '../saved_embeddings'
     parameters = {'hidden_units': 16, 'lr': 0.001, 'epochs': 10}
     ### Parse arguments here ###
 
-    test_model = model(
-        data_dir = data_dir,
+    lstm = LSTM(
+        ts_dir = ts_dir,
+        vec_dir = vec_dir,
         kg_dir = kg_dir,
         parameters=parameters
     )
-    test_model.train()
+    lstm.train()
 
 if __name__ == '__main__':
     main()

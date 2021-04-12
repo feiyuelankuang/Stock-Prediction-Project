@@ -32,5 +32,5 @@ for file in os.listdir('../data/Final_News/'):
             # Add to DataFrame
             vec_df = vec_df.append({"vec": [model[x] for x in txt.split(' ') if x is not ''], "time": row.time}, ignore_index=True)
 
-        # vec_df.to_csv('../data/News_Vectors/' + file, index=False)
-        vec_df.to_pickle('../data/News_Vectors/' + filename + '.pkl')
+        # vec_df.to_csv('../data/news_vectors/' + file, index=False)
+        vec_df.to_pickle('../data/news_vectors/' + filename + '.pkl')

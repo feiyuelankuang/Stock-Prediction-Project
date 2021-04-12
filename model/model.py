@@ -2,17 +2,18 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 import tensorflow_probability as tfp
-from load_data import load_data, load_kg_embeddings
+from load_data import load_ts_data, load_vec_data, load_kg_data
 import random
 import math
 import time
 from tensorflow.python.ops.nn_ops import leaky_relu
 
-class model:
-    def __init__(self, data_dir, kg_dir, parameters):
+class LSTM:
+    def __init__(self, ts_dir, vec_dir, kg_dir, parameters):
         self.parameters = parameters
-        self.ts_data, self.gt_data = load_data(data_dir)
-        # self.kg_data = load_kg_embeddings(kg_dir)
+        self.ts_data, self.gt_data = load_ts_data(ts_dir)
+        # self.vec_data = load_vec_data(vec_dir)
+        # self.kg_data = load_kg_data(kg_dir)
         self.kg_data = np.zeros(self.ts_data.shape)
 
         self.batch_size = self.ts_data.shape[0] # Fixed batch size (can be changed)
@@ -31,6 +32,7 @@ class model:
             tf.reset_default_graph()
 
             ts_feature = tf.placeholder(tf.float32, [self.batch_size, self.ts_data.shape[2]])
+            vec_feature = tf.placeholder(tf.float32, [self.batch_size, None])
             kg_feature = tf.placeholder(tf.float32, [self.batch_size, self.kg_data.shape[2]])
             ground_truth = tf.placeholder(tf.float32, [self.batch_size, 2])
 

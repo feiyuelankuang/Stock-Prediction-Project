@@ -7,8 +7,8 @@ from dateutil.relativedelta import *
 from sklearn.preprocessing import OneHotEncoder
 from csv import writer
 
-def load_data(data_dir):
-    for (_, _, filename) in os.walk(data_dir):
+def load_ts_data(ts_dir):
+    for (_, _, filename) in os.walk(ts_dir):
         ticker_files = filename
 
     for index, ticker_file in enumerate(ticker_files):
@@ -34,6 +34,10 @@ def load_data(data_dir):
         gt_data[index, :, :] = delta_data
 
     return ts_data, gt_data
+
+def load_vec_data(vec_dir):
+    
+
 
 def load_kg_embeddings(kg_dir):
     pass
