@@ -14,9 +14,6 @@ class LSTM:
         self.ts_data, self.gt_data = load_ts_data(ts_dir)
         self.vec_data = load_vec_data(vec_dir)
 
-        print(self.ts_data.shape)
-        print(self.vec_data.shape)
-
         # self.kg_data = load_kg_data(kg_dir)
         self.kg_data = np.zeros(self.ts_data.shape)
 
@@ -41,16 +38,30 @@ class LSTM:
             ground_truth = tf.placeholder(tf.float32, [self.batch_size, 2])
 
             # TS embeddings
-            ts_embedding = tf.layers.dense(ts_feature, units=2, activation=tf.nn.softmax)
+            ts_embedding = ts_feature
+
+            # Vec embeddings
+            expanded_vec = tf.expand_dims(vec_feature, -1)
+            sequence_length = vec_feature.shape[1].value
+            embedding_size = vec_feature.shape[2].value
+            filter_size = 3
+            num_filters = 128
+
+            filter_shape = [filter_size, embedding_size, 1, num_filters]
+            W = tf.Variable(tf.truncated_normal(filter_shape, stddev=0.1), name="W")
+            b = tf.Variable(tf.constant(0.1, shape=[num_filters]), name="b")
+            conv = tf.nn.conv2d(expanded_vec, W, strides=[1, 1, 1, 1], padding="VALID", name="conv")
+            h = tf.nn.relu(tf.nn.bias_add(conv, b), name="relu")
+            pooled = tf.nn.max_pool(h, ksize=[1, sequence_length - filter_size + 1, 1, 1], strides=[1, 1, 1, 1], padding='VALID', name="pool")
+            vec_embedding = tf.squeeze(tf.layers.dense(pooled, units=50, activation=tf.nn.leaky_relu))
 
             # # KG embeddings
             # kg_embedding = tf.layers.dense(kg_feature, units=16, activation=leaky_relu)
 
-            # # TS + KG embeddings
-            # kg_feature = tf.reshape(kg_feature, [self.batch_size, 16])
-            # stock_embedding = tf.layers.dense(tf.concat([lstm_embedding, kg_embedding], axis=1), units=1, activation=leaky_relu)
-
-            prediction = tf.cast(ts_embedding, dtype=tf.float32)
+            # Combined embeddings + Prediction
+            stock_embedding = tf.concat([ts_embedding, vec_embedding], axis=1)
+            binary_pred = tf.layers.dense(stock_embedding, units=2, activation=tf.nn.softmax)
+            prediction = tf.cast(binary_pred, dtype=tf.float32)
 
             # Loss
             loss = tf.losses.softmax_cross_entropy(ground_truth, prediction)

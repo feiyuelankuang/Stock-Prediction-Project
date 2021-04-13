@@ -23,7 +23,6 @@ for file in os.listdir('../data/News Triple/'):
 
         for index, row in news_df.iterrows():
             txt = row.content
-            #print(row.time) # BUG: Please fix
 
             # # Remove the first 'b'
             # txt = txt[1:]

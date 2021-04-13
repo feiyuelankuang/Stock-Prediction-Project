@@ -8,15 +8,15 @@ for i, ticker in enumerate(['AAPL', 'BA', 'GOOG', 'MSFT', 'WMT']):
     ts = pd.read_csv('../data/timeseries_data/' + ticker + '.csv', header=None)
 
     if ticker == 'AAPL':
-        filename = 'apple_reuters_processed'
+        filename = 'apple_reuters_result_processed'
     elif ticker == 'BA':
-        filename = 'Boeing_news_CNN_processed'
+        filename = 'boeing_news_CNN_result_processed'
     elif ticker == 'GOOG':
-        filename = 'google_news_CNN_processed'
+        filename = 'google_news_CNN_result_processed'
     elif ticker == 'MSFT':
-        filename = 'microsoft_reuters_processed'
+        filename = 'microsoft_reuters_result_processed'
     elif ticker == 'WMT':
-        filename = 'walmart_news_CNN_processed'
+        filename = 'walmart_news_CNN_result_processed'
 
     vec = pd.read_pickle('../data/news_vectors/' + filename + '.pkl')
 
