@@ -2,7 +2,7 @@ import csv
 import re
 from string import digits
 import os
-
+from gensim.models import KeyedVectors
 
 dirty_list = ['TZ','tz','T.Z','t.z']
 

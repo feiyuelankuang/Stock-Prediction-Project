@@ -2,13 +2,13 @@ import torch
 from torch import optim, nn
 from torch.utils.data import Dataset, DataLoader
 from model import TranE
-from prepare_data import TrainSet, TestSet
+from dataloader import TrainSet
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-num_epochs = 50
+num_epochs = 100
 train_batch_size = 32
 lr = 1e-2
-momentum = 0
+momentum = 5e-4
 gamma = 1
 d_norm = 2
 #top_k = 10
@@ -18,7 +18,7 @@ def main():
     train_dataset = TrainSet()
     train_loader = DataLoader(train_dataset, batch_size=train_batch_size, shuffle=True)
     transe = TranE(device, d_norm=d_norm, gamma=gamma).to(device)
-    optimizer = optim.SGD(transe.parameters(), lr=lr, momentum=momentum)
+    optimizer = optim.Adam(transe.parameters(), lr=lr, momentum=momentum)
     for epoch in range(num_epochs):
         # e <= e / ||e||
         #entity_norm = torch.norm(transe.entity_embedding.weight.data, dim=1, keepdim=True)
@@ -38,7 +38,7 @@ def main():
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-        print("epoch {epoch+1}, loss = {total_loss/train_dataset.__len__()}")
+        print("epoch:",epoch, "loss:" , total_loss/len(train_loader))
 
 
 if __name__ == '__main__':

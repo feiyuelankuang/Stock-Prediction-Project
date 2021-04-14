@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 import torch.nn.functional as F
-from prepare_data import TrainSet, TestSet
+from dataloader import TrainSet
 import math
 from gensim.models import KeyedVectors
 
@@ -31,20 +31,34 @@ class TranE(nn.Module):
         self.reset_parameters()
     
     def reset_parameters(self):
-        nn.init.xavier_uniform_(self.head_entity_embedding)
-        nn.init.xavier_uniform_(self.tail_entity_embedding)
+        nn.init.xavier_uniform_(self.head_mapping)
+        nn.init.xavier_uniform_(self.tail_mapping)
 
     def word2vec(self, txt):
         # Remove punctuation
-        txt = txt.translate(str.maketrans('', '', string.punctuation))
+        #print('before process:',txt)
+        #txt = txt.translate(str.maketrans('', '', string.punctuation))
         # Remove exception terms
-        resultwords  = [word for word in txt.split() if word in self.model]
-        txt = ' '.join(resultwords)
-        vec = []
-        for x in txt.split(' '):
-            if x is not '':
-                vec.append(model[x])
-        return sum(vec)/len(vec)
+
+        #resultwords  = [word for word in txt.split() if word in self.model]
+        #txt = ' '.join(resultwords)
+        #vec = []  
+        #print('after:',txt)
+
+
+      # Tokenize the string into words
+        tokens = word_tokenize(txt)
+       # Remove non-alphabetic tokens, such as punctuation
+        words = [word.lower() for word in tokens if word.isalpha()]
+       # Filter out stopwords
+        #stop_words = set(stopwords.words('english'))
+        #words = [word for word in words if not word in stop_words]
+        #print(words)
+        vector_list = [self.model[word] for word in words if word in self.model]
+        if len(vector_list) == 0:
+            #print('None')
+            return None
+        return np.mean(np.array(vector_list), axis=0)
 
     def calculate_loss(self, pos_dis, neg_dis):
         """
@@ -65,8 +79,8 @@ class TranE(nn.Module):
         :param neg_tail: [batch_size]
         :return: triples loss
         """
-        pos_dis = torch.mm(self.head_mapping,self.word2vec(pos_head)) + self.word2vec(pos_relation) - torch.mm(self.tail_mapping,self.word2vec(pos_tail))
-        neg_dis = torch.mm(self.head_mapping,self.word2vec(neg_head)) + self.word2vec(neg_relation) - torch.mm(self.tail_mapping,self.word2vec(neg_tail))
+        pos_dis = torch.mm(pos_head,self.head_mapping) + pos_relation - torch.mm(pos_tail,self.tail_mapping)
+        neg_dis = torch.mm(neg_head,self.head_mapping) + neg_relation - torch.mm(neg_tail,self.tail_mapping)
         # return pos_head_and_relation, pos_tail, neg_head_and_relation, neg_tail
         return self.calculate_loss(pos_dis, neg_dis).requires_grad_()
 
