@@ -47,10 +47,21 @@ def main():
             loss.backward()
             optimizer.step()
         if (epoch+1) % 30 == 0:
-            decrease_learning_rate()    
+            decrease_learning_rate()
 
-        print("epoch:",epoch, "loss:" , total_loss/len(train_loader))
+    state = {
+        'state_dict': transe.state_dict(),          
+    }
+
+    torch.save(state, 'trnsE.t7')    
+    print("epoch:",epoch, "loss:" , total_loss/len(train_loader))
 
 
 if __name__ == '__main__':
-    main()
+    #main()
+    #train_dataset = TrainSet()
+    #train_loader = DataLoader(train_dataset, batch_size=train_batch_size, shuffle=True)
+    transE = TranE(device, d_norm=d_norm, gamma=gamma).to(device)
+    checkpoint = torch.load('trnsE.t7')
+    transE.load_state_dict(checkpoint['state_dict'])
+    print(transE.predict('apple','is','company').detach().numpy().shape)

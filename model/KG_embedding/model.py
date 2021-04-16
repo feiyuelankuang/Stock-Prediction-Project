@@ -5,7 +5,9 @@ import torch.nn.functional as F
 from dataloader import TrainSet
 import math
 from gensim.models import KeyedVectors
-
+import numpy as np
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
 
 class TranE(nn.Module):
     def __init__(self, device, word_dim=300, d_norm=2, gamma=1,model_path = '../../data/GoogleNews-vectors-negative300.bin'):
@@ -58,7 +60,7 @@ class TranE(nn.Module):
         if len(vector_list) == 0:
             #print('None')
             return None
-        return np.mean(np.array(vector_list), axis=0)
+        return torch.Tensor(np.mean(np.array(vector_list), axis=0)).unsqueeze(0)
 
     def calculate_loss(self, pos_dis, neg_dis):
         """
@@ -83,6 +85,9 @@ class TranE(nn.Module):
         neg_dis = torch.mm(neg_head,self.head_mapping) + neg_relation - torch.mm(neg_tail,self.tail_mapping)
         # return pos_head_and_relation, pos_tail, neg_head_and_relation, neg_tail
         return self.calculate_loss(pos_dis, neg_dis).requires_grad_()
+
+    def predict(self, head, relation, tail):
+        return torch.cat((torch.mm(self.word2vec(head),self.head_mapping).squeeze(),self.word2vec(relation).squeeze(),torch.mm(self.word2vec(tail),self.tail_mapping).squeeze()))
 
 if __name__ == '__main__':
     train_data_set = TrainSet()
