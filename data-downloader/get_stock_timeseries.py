@@ -5,7 +5,7 @@ import yfinance as yf
 
 ts_folder = '../data/timeseries_data/'
 
-start_date = datetime.datetime(2010, 1, 2)
+start_date = datetime.datetime(2009, 9, 1)
 end_date = datetime.datetime(2021, 4, 2)
 
 tickers_str = 'AAPL MSFT SSNLF BA GOOG WMT' # Note: SSNLF not available
