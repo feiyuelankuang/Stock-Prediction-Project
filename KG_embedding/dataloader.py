@@ -12,7 +12,7 @@ from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 
 class TrainSet(Dataset):
-    def __init__(self, root ='../../data/'):
+    def __init__(self, root ='../data/'):
         super(TrainSet, self).__init__()
         self.model = KeyedVectors.load_word2vec_format(root+'GoogleNews-vectors-negative300.bin', binary=True)
         self.entity_dict = {}

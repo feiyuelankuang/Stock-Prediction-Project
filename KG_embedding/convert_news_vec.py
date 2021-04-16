@@ -1,9 +1,19 @@
 import pandas as pd
 import numpy as np
+from get_news_vec import *
+from model import TranE
+import torch
 
 vec_arr = []
-root = '../../data/'
+root = '../data/'
 max_len = 0
+vec_dict = {}
+transE = TranE(device,root=model_path+'/GoogleNews-vectors-negative300.bin',d_norm=2, gamma=1).to(device)
+checkpoint = torch.load('trnsE.t7')
+transE.load_state_dict(checkpoint['state_dict'])
+vec_dict,vec_dict_combine = get_news_vec(transE)
+print('file loaded')
+
 # Loop through folder
 for i, ticker in enumerate(['AAPL', 'BA', 'GOOG', 'MSFT', 'WMT']):
     ts = pd.read_csv(root + 'timeseries_data/' + ticker + '.csv', header=None)
@@ -19,7 +29,7 @@ for i, ticker in enumerate(['AAPL', 'BA', 'GOOG', 'MSFT', 'WMT']):
     elif ticker == 'WMT':
         filename = 'walmart_news_CNN_result_processed'
 
-    vec = pd.read_pickle(root + 'news_vectors/' + filename + '_combined_embedding.pkl')
+    vec = vec_dict_combine[filename]
 
     ts = ts.rename(columns={0:'time'})
     ts['time'] = pd.to_datetime(ts['time'])
