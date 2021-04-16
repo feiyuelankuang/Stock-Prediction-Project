@@ -8,7 +8,7 @@ vec_arr = []
 root = '../data/'
 max_len = 0
 vec_dict = {}
-transE = TranE(device,root=model_path+'/GoogleNews-vectors-negative300.bin',d_norm=2, gamma=1).to(device)
+transE = TranE(device,model_path=root+'/GoogleNews-vectors-negative300.bin',d_norm=2, gamma=1).to(device)
 checkpoint = torch.load('trnsE.t7')
 transE.load_state_dict(checkpoint['state_dict'])
 vec_dict,vec_dict_combine = get_news_vec(transE)
