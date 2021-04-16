@@ -6,7 +6,7 @@ def main():
     ts_dir = '../data/timeseries_data'
     vec_dir = '../data/news_vectors'
     kg_dir = '../saved_embeddings'
-    parameters = {'seq_len': 5, 'lr': 0.001, 'epochs': 10}
+    parameters = {'seq_len': 5, 'lr': 0.001, 'epochs': 50}
     ### Parse arguments here ###
 
     lstm = LSTM(
@@ -18,4 +18,5 @@ def main():
     lstm.train()
 
 if __name__ == '__main__':
-    main()
+	for i in range(2):
+		main()

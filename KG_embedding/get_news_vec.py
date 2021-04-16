@@ -37,7 +37,7 @@ def get_combined_embedding(txt,h,r,t,trans):
     #print(kg_embedding.shape,sentence_embedding.shape)
     return kg_embedding,np.concatenate((sentence_embedding,kg_embedding))
 
-def get_news_vec(model):
+def get_news_vec(trans_model):
     vec_df_list={}
     vec_df_combine_list={}
 # Loop through folder
@@ -54,10 +54,10 @@ def get_news_vec(model):
 
             filename = file.split('.')[0]
             vec_df = pd.DataFrame()
-            vec_def_combine = pd.DataFrame()
+            vec_df_combine = pd.DataFrame()
 
             for index, row in news_df.iterrows():
-                out = get_combined_embedding(row.content,row.h,row.r,row.t,transE)
+                out = get_combined_embedding(row.content,row.h,row.r,row.t,trans_model)
                 if out is not None:
                     kg_embedding,combined_embedding = out
                 #print('combine:',combined_embedding.shape)

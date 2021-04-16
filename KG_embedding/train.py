@@ -1,7 +1,7 @@
 import torch
 from torch import optim, nn
 from torch.utils.data import Dataset, DataLoader
-from model import TranE
+from model import *
 from dataloader import TrainSet
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -17,7 +17,7 @@ d_norm = 2
 def main():
     train_dataset = TrainSet()
     train_loader = DataLoader(train_dataset, batch_size=train_batch_size, shuffle=True)
-    transe = TranE(device, d_norm=2, gamma=1).to(device)
+    transe = TranD(device, d_norm=2, gamma=1).to(device)
     optimizer = optim.Adam(transe.parameters(), lr=lr)#, momentum=momentum)
     #optimizer = optim.SGD(transe.parameters(), lr=lr, momentum=momentum)
 
@@ -53,7 +53,7 @@ def main():
         'state_dict': transe.state_dict(),          
     }
 
-    torch.save(state, 'trnsE.t7')    
+    torch.save(state, 'trnsD.t7')    
     print("epoch:",epoch, "loss:" , total_loss/len(train_loader))
 
 
@@ -61,7 +61,7 @@ if __name__ == '__main__':
     #main()
     #train_dataset = TrainSet()
     #train_loader = DataLoader(train_dataset, batch_size=train_batch_size, shuffle=True)
-    transE = TranE(device, d_norm=d_norm, gamma=gamma).to(device)
-    checkpoint = torch.load('trnsE.t7')
-    transE.load_state_dict(checkpoint['state_dict'])
-    print(transE.predict('apple','is','company').detach().numpy().shape)
+    transD = TranD(device, d_norm=d_norm, gamma=gamma).to(device)
+    checkpoint = torch.load('trnsD.t7')
+    transD.load_state_dict(checkpoint['state_dict'])
+    #print(transD.predict('apple','is','company').detach().numpy().shape)

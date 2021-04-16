@@ -9,7 +9,7 @@ from csv import writer
 
 ticker_list = ['AAPL', 'BA', 'GOOG', 'MSFT', 'WMT']
 
-def load_ts_data(ts_dir):
+def load_ts_data(ts_dir,seq_len = 5):
     for index, ticker in enumerate(ticker_list):
         print('Loading Ticker ' + str(index+1) + '/' + str(len(ticker_list)) + '...')
 
@@ -56,8 +56,7 @@ def load_ts_data(ts_dir):
 
         # Data Normalization
         scaler = StandardScaler()
-        seq_len = 5
-        train_ratio = 0.6
+        train_ratio = 0.7
 
         for i in range(ts_data.shape[2]):
             ts_data[:, :math.ceil((ts_data.shape[1] - seq_len) * train_ratio)-1, i] = scaler.fit_transform(ts_data[:, :math.ceil((ts_data.shape[1] - seq_len) * train_ratio)-1, i].T).T # Train Data
