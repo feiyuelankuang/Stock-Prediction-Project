@@ -5,7 +5,7 @@ from model import TranE
 from dataloader import TrainSet
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-num_epochs = 100
+num_epochs = 120
 train_batch_size = 32
 lr = 1e-2
 momentum = 5e-4
@@ -18,7 +18,15 @@ def main():
     train_dataset = TrainSet()
     train_loader = DataLoader(train_dataset, batch_size=train_batch_size, shuffle=True)
     transe = TranE(device, d_norm=d_norm, gamma=gamma).to(device)
-    optimizer = optim.Adam(transe.parameters(), lr=lr, momentum=momentum)
+    optimizer = optim.Adam(transe.parameters(), lr=lr)#, momentum=momentum)
+    #optimizer = optim.SGD(transe.parameters(), lr=lr, momentum=momentum)
+
+    def decrease_learning_rate():
+        #global optimizer
+        """Decay the previous learning rate by 10"""
+        for param_group in optimizer.param_groups:
+            param_group['lr'] /= 5
+    
     for epoch in range(num_epochs):
         # e <= e / ||e||
         #entity_norm = torch.norm(transe.entity_embedding.weight.data, dim=1, keepdim=True)
@@ -38,6 +46,9 @@ def main():
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+        if (epoch+1) % 30 == 0:
+            decrease_learning_rate()    
+
         print("epoch:",epoch, "loss:" , total_loss/len(train_loader))
 
 
