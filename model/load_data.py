@@ -18,19 +18,18 @@ def load_ts_data(ts_dir):
         df = df.fillna(method='ffill') # Fill data with previous day's -> Avoid lookahead bias
 
         if index == 0:
+            # Set an empty numpy array
             ts_data = np.zeros([len(ticker_list), df.shape[0] - 1, df.shape[1]], dtype=np.float32)
             gt_data = np.zeros([len(ticker_list), df.shape[0] - 1, 2], dtype=np.float32)
 
-        # Timeseries: No. of days x 6 features
-        ts_data[index, :, :] = df[:-1]
+        delta_data = df[2].pct_change()[1:] # Get a dataframe of day-to-day change
+        delta_data[delta_data < 0] = 0 # Map loss to value 0
+        delta_data[delta_data > 0] = 1 # Map gain to value 1
+        ohe = OneHotEncoder(categories = "auto", sparse = False) 
+        delta_data = ohe.fit_transform(pd.DataFrame(delta_data)) # Do one hot encoding
 
-        # Ground Truth: No. of days x 2 (Up or Down)
-        delta_data = df[2].pct_change()[1:]
-        delta_data[delta_data < 0] = 0 # Loss is 0
-        delta_data[delta_data > 0] = 1 # Gain is 1
-        ohe = OneHotEncoder(categories = "auto", sparse = False)
-        delta_data = ohe.fit_transform(pd.DataFrame(delta_data))
-        gt_data[index, :, :] = delta_data
+        ts_data[index, :, :] = df[:-1] # Timeseries array: No. of tickers x No. of days x 6 features
+        gt_data[index, :, :] = delta_data # Ground Truth array: No. of tickers x No. of days x 2 (Up or Down)
 
     return ts_data, gt_data
 
