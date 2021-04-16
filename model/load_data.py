@@ -4,7 +4,7 @@ import pandas as pd
 import math
 import datetime
 from dateutil.relativedelta import *
-from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from csv import writer
 
 ticker_list = ['AAPL', 'BA', 'GOOG', 'MSFT', 'WMT']
@@ -51,8 +51,17 @@ def load_ts_data(ts_dir):
         ohe = OneHotEncoder(categories = "auto", sparse = False)
         delta_data = ohe.fit_transform(pd.DataFrame(delta_data)) # Do one hot encoding
 
-        ts_data[index, :, :] = df[:-1] # Timeseries array: No. of tickers x No. of days x 6 features
+        ts_data[index, :, :] = df[:-1] # Timeseries array: No. of tickers x No. of days x 8 features
         gt_data[index, :, :] = delta_data # Ground Truth array: No. of tickers x No. of days x 2 (Up or Down)
+
+        # Data Normalization
+        scaler = StandardScaler()
+        seq_len = 5
+        train_ratio = 0.6
+
+        for i in range(ts_data.shape[2]):
+            ts_data[:, :math.ceil((ts_data.shape[1] - seq_len) * train_ratio)-1, i] = scaler.fit_transform(ts_data[:, :math.ceil((ts_data.shape[1] - seq_len) * train_ratio)-1, i].T).T # Train Data
+            ts_data[:, math.ceil((ts_data.shape[1] - seq_len) * train_ratio):, i] = scaler.transform(ts_data[:, math.ceil((ts_data.shape[1] - seq_len) * train_ratio):, i].T).T # Valid / Test Data
 
     return ts_data, gt_data
 
