@@ -87,7 +87,7 @@ class TranE(nn.Module):
         return self.calculate_loss(pos_dis, neg_dis).requires_grad_()
 
     def predict(self, head, relation, tail):
-        return torch.cat((torch.mm(self.word2vec(head),self.head_mapping).squeeze(),self.word2vec(relation).squeeze(),torch.mm(self.word2vec(tail),self.tail_mapping).squeeze()))
+        return torch.cat((torch.mm(head,self.head_mapping).squeeze(),relation.squeeze(),torch.mm(tail,self.tail_mapping).squeeze()))
 
 if __name__ == '__main__':
     train_data_set = TrainSet()

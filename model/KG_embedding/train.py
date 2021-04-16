@@ -17,7 +17,7 @@ d_norm = 2
 def main():
     train_dataset = TrainSet()
     train_loader = DataLoader(train_dataset, batch_size=train_batch_size, shuffle=True)
-    transe = TranE(device, d_norm=d_norm, gamma=gamma).to(device)
+    transe = TranE(device, d_norm=2, gamma=1).to(device)
     optimizer = optim.Adam(transe.parameters(), lr=lr)#, momentum=momentum)
     #optimizer = optim.SGD(transe.parameters(), lr=lr, momentum=momentum)
 
