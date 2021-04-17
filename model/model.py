@@ -190,7 +190,7 @@ class LSTM_KG:
         self.hidden_size = self.parameters['hidden_size']
         model_dict={('TransE',True):'transE_combine',('TransD',True):'transD_combine',('TransE',False):'transE_KG', ('TransD',False):'transD_KG'}
         self.filename = model_dict[(model,combine)]
-        #print(kg_dir+self.filename+'.npy')
+        print(kg_dir+self.filename+'.npy')
 
         self.kg_data = load_kg_data(kg_dir+self.filename+'.npy')
         #print(self.kg_data.shape)

@@ -37,9 +37,10 @@ def train_kg(root,model='TransE',combine=True):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", type=str, choices=['TransE','TransD'],default='TransE',help="TransE or TransD")
-    parser.add_argument("--combine",type=bool,default=True, help="combine feature or kg feature")
-    parser.add_argument("--root",type=str, default= '../' help="root path")
+    parser.add_argument("--model", type=str, choices=['TransE','TransD'], default='TransE',help="TransE or TransD")
+    parser.add_argument("--combine",type=bool,default=False, help="combine feature or kg feature")
+    parser.add_argument("--root",type=str, default= '../',help="root path")
     args = parser.parse_args()
     for i in range(3):
         train_kg(args.root,args.model,args.combine)
+        #train()
