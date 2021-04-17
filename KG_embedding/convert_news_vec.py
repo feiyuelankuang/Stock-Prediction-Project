@@ -4,10 +4,8 @@ from get_news_vec import *
 from model import *
 import torch
 
-vec_arr = []
 root = '../data/'
 max_len = 0
-vec_dict = {}
 transE = TranE(device,model_path=root+'/GoogleNews-vectors-negative300.bin',d_norm=2, gamma=1).to(device)
 checkpoint = torch.load('trnsE.t7')
 transE.load_state_dict(checkpoint['state_dict'])
@@ -20,6 +18,7 @@ print('file loaded')
 
 # Loop through folder
 def get_array(dict,vec_name,size=1412):
+    vec_arr = []
     for i, ticker in enumerate(['AAPL', 'BA', 'GOOG', 'MSFT', 'WMT']):
         ts = pd.read_csv(root + 'timeseries_data/' + ticker + '.csv', header=None)
 
@@ -65,8 +64,8 @@ def get_array(dict,vec_name,size=1412):
         #arr = np.pad(arr, ((0, 2958 - arr.shape[0]), (0,0)), 'constant')
         #vec_arr[i, index, :, :] = arr
     #if len(arr_list) > max_len:
-    vec_arr.append(np.array(arr_list))
-    print(len(arr_list))
+        vec_arr.append(np.array(arr_list))
+        #print(len(arr_list))
 
 # vec_arr.to_pickle('../data/news_vectors/vec.pkl')
     with open(root+'/news_vectors/'+vec_name+'.npy', 'wb') as f:
@@ -75,6 +74,6 @@ def get_array(dict,vec_name,size=1412):
 print('begin alignment')
 get_array(vec_dict_e,'transE_KG',900)
 get_array(vec_dict_d,'transD_KG',900)
-#get_array(vec_dict_combine_e,'transE_combine')
-#get_array(vec_dict_combine_d,'transD_combine')
+get_array(vec_dict_combine_e,'transE_combine')
+get_array(vec_dict_combine_d,'transD_combine')
 print('finish all')

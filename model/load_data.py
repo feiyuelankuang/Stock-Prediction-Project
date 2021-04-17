@@ -39,6 +39,7 @@ def load_ts_data(ts_dir,seq_len = 5):
         # Drop unnecessary columns
         df = df.drop(columns=['Adj Close'])
         df = df.fillna(0)
+        #vec = load_vec_data(vec_dir)
 
         if index == 0:
             # Set an empty numpy array
@@ -56,7 +57,8 @@ def load_ts_data(ts_dir,seq_len = 5):
 
         # Data Normalization
         scaler = StandardScaler()
-        train_ratio = 0.7
+        train_ratio = 0.6
+        print(ts_data.shape[1])
 
         for i in range(ts_data.shape[2]):
             ts_data[:, :math.ceil((ts_data.shape[1] - seq_len) * train_ratio)-1, i] = scaler.fit_transform(ts_data[:, :math.ceil((ts_data.shape[1] - seq_len) * train_ratio)-1, i].T).T # Train Data
@@ -65,10 +67,18 @@ def load_ts_data(ts_dir,seq_len = 5):
     return ts_data, gt_data
 
 def load_vec_data(vec_dir):
-    with open('../data/news_vectors/vec.npy', 'rb') as f:
+    with open(vec_dir, 'rb') as f:
         vec_data = np.load(f)
 
     return vec_data
 
-def load_kg_data(kg_dir):
-    pass
+def load_kg_data(kg_file):
+    with open(kg_file, 'rb') as f:
+        kg_data = np.load(f)
+        #print(kg_data.shape)
+    return kg_data[:,:-1,:]
+
+
+#load_ts_data('../data/timeseries_data')
+#a = load_kg_data('../data/news_vectors/transE_combine.npy')
+#print(a.shape)
