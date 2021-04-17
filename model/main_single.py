@@ -1,5 +1,5 @@
 import argparse
-from model import *
+from model_single import *
 parser = argparse.ArgumentParser()
 
 def train(stock=None):
