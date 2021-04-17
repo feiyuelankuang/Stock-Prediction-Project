@@ -19,7 +19,7 @@ def train():
     lstm.train()
 
 
-def train_kg(root,model='TransE',combine=True):
+def train_kg(root,model,combine):
     ### Parse arguments here ###
     ts_dir = root + 'data/timeseries_data/'
     kg_dir = root + 'data/news_vectors/'
@@ -42,5 +42,5 @@ if __name__ == '__main__':
     parser.add_argument("--root",type=str, default= '../',help="root path")
     args = parser.parse_args()
     for i in range(3):
-        train_kg(args.root,args.model,args.combine)
+        train_kg(root=args.root,model=args.model,combine=args.combine)
         #train()
