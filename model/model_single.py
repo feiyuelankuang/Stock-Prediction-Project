@@ -47,6 +47,7 @@ class LSTM:
         #print(np.stack(gt_data, axis=0).shape)
         return np.stack(ts_data, axis=0),np.stack(kg_data, axis=0),np.stack(gt_data, axis=0)
 
+
     def train(self):
         device_name = '/gpu:0'
         #device_name = 'cpu'
@@ -154,8 +155,6 @@ class LSTM:
 
             ### TEST SET ###
             test_loss = 0.0
-            test_acc = 0.0
-            test_f1 = 0.0
             test_pred = np.zeros([self.ts_data.shape[1] - self.test_index, self.batch_size, 2], dtype=np.float32)
             test_batch = 0
 
@@ -174,15 +173,17 @@ class LSTM:
                 test_loss += curr_loss
                 test_pred[test_batch, :, :] = curr_pred
                 test_batch += 1
-                #print('Test Loss:', test_loss / (self.ts_data.shape[1] - self.test_index))
-                test_acc += accuracy_score(np.argmax(gt_batch, 1), np.argmax(curr_pred, 1))
-                test_f1 += f1_score(np.argmax(gt_batch, 1), np.argmax(curr_pred, 1))
 
+
+            print('Test Loss:', test_loss / (self.ts_data.shape[1] - self.test_index) / self.batch_size)
+            y_true = np.argmax(self.gt_data[:, self.test_index:, :], 2).flatten()
+            y_pred = np.argmax(np.transpose(test_pred, (1, 0, 2)), 2).flatten()
+            test_acc = accuracy_score(y_true, y_pred)
+            test_f1 = f1_score(y_true, y_pred)
+            print('Acc:', test_acc)
+            print('F1:', test_f1)
             print()
-            print('Test Loss:', test_loss / (self.total - self.test_index) / self.batch_size)
-            print('Acc:', test_acc / (self.total - self.test_index))
-            print('F1:', test_f1 / (self.total - self.test_index))
-            print()
+
             print('Took {:.3f}s.'.format(time.time() - t1))
             print()
 
@@ -190,8 +191,8 @@ class LSTM:
             ### For tracking best performance ###
             if val_loss < best_valid_loss:
                 best_valid_loss = val_loss
-                best_acc = test_acc / (self.ts_data.shape[1] - self.test_index)
-                best_f1 = test_f1 / (self.ts_data.shape[1] - self.test_index)
+                best_acc = test_acc
+                best_f1 = test_f1
                 best_pred = test_pred
 
         print('Best accuracy:', best_acc)
@@ -200,10 +201,11 @@ class LSTM:
             writer = csv.writer(csvfile)
             writer.writerow([best_acc,best_f1])
 
+
 class LSTM_KG:
     def __init__(self, ts_dir, kg_dir, model, combine, parameters,stock_index=None):
         self.parameters = parameters
-        self.ts_data, self.gt_data = load_ts_data(ts_dir)        
+        self.ts_data, self.gt_data = load_ts_data(ts_dir)
         self.kg_data = load_kg_data(kg_dir+self.filename+'.npy')
         self.ts_data = self.ts_data[stock_index]
         self.gt_data = self.gt_data[stock_index]
@@ -348,8 +350,6 @@ class LSTM_KG:
 
             ### TEST SET ###
             test_loss = 0.0
-            test_acc = 0.0
-            test_f1 = 0.0
             test_pred = np.zeros([self.ts_data.shape[1] - self.test_index, self.batch_size, 2], dtype=np.float32)
             test_batch = 0
 
@@ -368,15 +368,17 @@ class LSTM_KG:
                 test_loss += curr_loss
                 test_pred[test_batch, :, :] = curr_pred
                 test_batch += 1
-                #print('Test Loss:', test_loss / (self.ts_data.shape[1] - self.test_index))
-                test_acc += accuracy_score(np.argmax(gt_batch, 1), np.argmax(curr_pred, 1))
-                test_f1 += f1_score(np.argmax(gt_batch, 1), np.argmax(curr_pred, 1))
 
+
+            print('Test Loss:', test_loss / (self.ts_data.shape[1] - self.test_index) / self.batch_size)
+            y_true = np.argmax(self.gt_data[:, self.test_index:, :], 2).flatten()
+            y_pred = np.argmax(np.transpose(test_pred, (1, 0, 2)), 2).flatten()
+            test_acc = accuracy_score(y_true, y_pred)
+            test_f1 = f1_score(y_true, y_pred)
+            print('Acc:', test_acc)
+            print('F1:', test_f1)
             print()
-            print('Test Loss:', test_loss / (self.total - self.test_index) / self.batch_size)
-            print('Acc:', test_acc / (self.total - self.test_index))
-            print('F1:', test_f1 / (self.total - self.test_index))
-            print()
+
             print('Took {:.3f}s.'.format(time.time() - t1))
             print()
 
@@ -384,8 +386,8 @@ class LSTM_KG:
             ### For tracking best performance ###
             if val_loss < best_valid_loss:
                 best_valid_loss = val_loss
-                best_acc = test_acc / (self.ts_data.shape[1] - self.test_index)
-                best_f1 = test_f1 / (self.ts_data.shape[1] - self.test_index)
+                best_acc = test_acc
+                best_f1 = test_f1
                 best_pred = test_pred
 
         print('Best accuracy:', best_acc)
