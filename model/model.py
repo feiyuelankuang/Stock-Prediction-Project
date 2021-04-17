@@ -11,19 +11,30 @@ from sklearn.metrics import accuracy_score, f1_score
 import csv
 
 class LSTM:
-    def __init__(self, ts_dir, vec_dir, kg_dir, parameters):
+    def __init__(self, ts_dir, vec_dir, kg_dir, parameters,stock_index=None):
         self.parameters = parameters
         self.ts_data, self.gt_data = load_ts_data(ts_dir)
+        self.filename = 'LSTM'
+        company = ['AAPL', 'BA', 'GOOG', 'MSFT', 'WMT']
+        if stock_index is not None:
+            self.filename += ('_'+ company[stock_index])
         #self.vec_data = load_vec_data(vec_dir)
 
         # self.kg_data = load_kg_data(kg_dir)
         self.kg_data = np.zeros(self.ts_data.shape)
+        if stock_index is not None:
+            self.kg_data = np.expand_dims(self.kg_data[stock_index],axis=0)
+            self.ts_data = np.expand_dims(self.ts_data[stock_index],axis=0)
+            self.gt_data = np.expand_dims(self.gt_data[stock_index],axis=0)
 
         self.batch_size = self.ts_data.shape[0] # Fixed batch size (can be changed)
 
         self.seq = self.parameters['seq_len']
         self.valid_index = math.ceil((self.ts_data.shape[1] - self.seq) * 0.6) # 60-20-20 Split
         self.test_index = math.ceil((self.ts_data.shape[1] - self.seq) * 0.8)
+
+
+
 
     def get_batch(self, batch_index):
         return self.ts_data[:, batch_index - self.seq : batch_index, :], \
@@ -177,23 +188,30 @@ class LSTM:
                 best_pred = test_pred
 
         print('Best accuracy:', best_acc)
-        with open ('log/LSTM.csv', 'a') as csvfile:
+        with open ('log/'+self.filename+'.csv', 'a') as csvfile:
         #writer.writerow('news','date','confidence','agent','predicate','object')
             writer = csv.writer(csvfile)
             writer.writerow([best_acc,best_f1])
 
 class LSTM_KG:
-    def __init__(self, ts_dir, kg_dir, model, combine, parameters):
+    def __init__(self, ts_dir, kg_dir, model, combine, parameters,stock_index=None):
         self.parameters = parameters
-        self.ts_data, self.gt_data = load_ts_data(ts_dir)
+        self.ts_data, self.gt_data = load_ts_data(ts_dir)        
+        self.kg_data = load_kg_data(kg_dir+self.filename+'.npy')
+        if stock_index is not None:
+            self.kg_data = np.expand_dims(self.kg_data[stock_index],axis=0)
+            self.ts_data = np.expand_dims(self.ts_data[stock_index],axis=0)
+            self.gt_data = np.expand_dims(self.gt_data[stock_index],axis=0)
         self.kg_size = self.parameters['kg_size']
         self.hidden_size = self.parameters['hidden_size']
         model_dict={('TransE',True):'transE_combine', ('TransD',True):'transD_combine', ('TransE',False):'transE_KG', ('TransD',False):'transD_KG'}
+        company = ['AAPL', 'BA', 'GOOG', 'MSFT', 'WMT']
         #print(model,combine)
         self.filename = model_dict[(model,combine)]
         print(kg_dir+self.filename+'.npy')
+        if stock_index is not None:
+            self.filename += ('_'+ company[stock_index])
 
-        self.kg_data = load_kg_data(kg_dir+self.filename+'.npy')
         #print(self.kg_data.shape)
         #self.kg_data = np.zeros(self.ts_data.shape)
 
