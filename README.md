@@ -27,6 +27,9 @@ sklearn
 
 ## Running the code
 
-Before running the code, 
+Before running the code, please download word2vec model from https://drive.google.com/file/d/0B7XkCwpI5KDYNlNUTTlSS21pQmM/edit, unzip it and put it under data folder
 
-## License
+To build the model, firstly run python save_news_vector.py under kg_embedding folders
+
+Then under model folder, run python main.py --model '' --combine '' to train stock prediction model
+
