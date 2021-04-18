@@ -16,8 +16,7 @@ class LSTM:
         self.ts_data, self.gt_data = load_ts_data(ts_dir)
         self.filename = 'LSTM'
         company = ['AAPL', 'BA', 'GOOG', 'MSFT', 'WMT']
-        if stock_index is not None:
-            self.filename += ('_'+ company[stock_index])
+        self.filename += ('_'+ company[stock_index])
         #self.vec_data = load_vec_data(vec_dir)
 
         # self.kg_data = load_kg_data(kg_dir)
@@ -30,23 +29,23 @@ class LSTM:
         self.batch_size = 32 # Fixed batch size (can be changed)
 
         self.seq = self.parameters['seq_len']
-        self.total = math.ceil((self.ts_data.shape[1] - self.seq)/32)# 60-20-20 Split
+        self.total = math.ceil((self.ts_data.shape[0] - self.seq)/32)# 60-20-20 Split
         self.valid_index = math.ceil(self.total*0.6)
         self.test_index = math.ceil(self.total*0.8)
+        #print(self.total,self.valid_index,self.test_index)
 
 
     def get_batch(self, batch_index):
-        ts_data=[]
-        kg_data=[]
-        gt_data=[]
-        batch_index = self.seq + self.batch_size*batch_index
+        batch_index = batch_index*self.batch_size+self.seq
+        ts_data=np.zeros((self.batch_size,self.seq,self.ts_data.shape[1]))
+        kg_data=np.zeros((self.batch_size,self.seq,self.kg_data.shape[1]))
+        gt_data=np.zeros((self.batch_size,self.gt_data.shape[1]))
         for i in range(self.batch_size):
-            ts_data.append(self.ts_data[batch_index - self.seq + i : batch_index + i,:])
-            kg_data.append(self.kg_data[batch_index - self.seq + i : batch_index + i,:])
-            gt_data.append(self.gt_data[batch_index + i])
-        #print(np.stack(gt_data, axis=0).shape)
-        return np.stack(ts_data, axis=0),np.stack(kg_data, axis=0),np.stack(gt_data, axis=0)
-
+            if (batch_index + i) < self.ts_data.shape[0]:
+                ts_data[i,:,:] = self.ts_data[batch_index - self.seq + i : batch_index + i,:]
+                kg_data[i,:,:] = self.kg_data[batch_index - self.seq + i : batch_index + i,:]
+                gt_data[i,:] = self.gt_data[batch_index + i - 1]
+        return ts_data,kg_data,gt_data
 
     def train(self):
         device_name = '/gpu:0'
@@ -148,14 +147,15 @@ class LSTM:
                 curr_loss, curr_pred = sess.run((loss, prediction), feed_dict)
                 val_loss += curr_loss
 
-            print(self.test_index - self.valid_index,batch_size)
+            #print(self.test_index - self.valid_index,self.batch_size)
 
             print('Valid Loss:', val_loss / (self.test_index - self.valid_index) / self.batch_size)
 
 
             ### TEST SET ###
             test_loss = 0.0
-            test_pred = np.zeros([self.ts_data.shape[1] - self.test_index, self.batch_size, 2], dtype=np.float32)
+            test_pred = np.zeros([self.total- self.test_index, self.batch_size, 2], dtype=np.float32)
+            y_true = np.zeros([self.total-self.test_index, self.batch_size, 2], dtype=np.float32)
             test_batch = 0
 
             for i in range(self.test_index, self.total):
@@ -172,11 +172,11 @@ class LSTM:
                 curr_loss, curr_pred = sess.run((loss, prediction), feed_dict)
                 test_loss += curr_loss
                 test_pred[test_batch, :, :] = curr_pred
+                y_true[test_batch, :, :] = gt_batch
                 test_batch += 1
 
-
-            print('Test Loss:', test_loss / (self.ts_data.shape[1] - self.test_index) / self.batch_size)
-            y_true = np.argmax(self.gt_data[:, self.test_index:, :], 2).flatten()
+            print('Test Loss:', test_loss / (self.total - self.test_index) / self.batch_size)
+            y_true = np.argmax(y_true, 2).flatten()
             y_pred = np.argmax(np.transpose(test_pred, (1, 0, 2)), 2).flatten()
             test_acc = accuracy_score(y_true, y_pred)
             test_f1 = f1_score(y_true, y_pred)
@@ -201,51 +201,50 @@ class LSTM:
             writer = csv.writer(csvfile)
             writer.writerow([best_acc,best_f1])
 
-
 class LSTM_KG:
     def __init__(self, ts_dir, kg_dir, model, combine, parameters,stock_index=None):
         self.parameters = parameters
-        self.ts_data, self.gt_data = load_ts_data(ts_dir)
+        model_dict={('TransE',True):'transE_combine', ('TransD',True):'transD_combine', ('TransE',False):'transE_KG', ('TransD',False):'transD_KG'}
+        company = ['AAPL', 'BA', 'GOOG', 'MSFT', 'WMT']
+        #print(model,combine)
+        self.filename = model_dict[(model,combine)]
+        self.ts_data, self.gt_data = load_ts_data(ts_dir)        
         self.kg_data = load_kg_data(kg_dir+self.filename+'.npy')
         self.ts_data = self.ts_data[stock_index]
         self.gt_data = self.gt_data[stock_index]
         self.kg_data = self.kg_data[stock_index]
         self.kg_size = self.parameters['kg_size']
         self.hidden_size = self.parameters['hidden_size']
-        model_dict={('TransE',True):'transE_combine', ('TransD',True):'transD_combine', ('TransE',False):'transE_KG', ('TransD',False):'transD_KG'}
-        company = ['AAPL', 'BA', 'GOOG', 'MSFT', 'WMT']
-        #print(model,combine)
-        self.filename = model_dict[(model,combine)]
+        
         print(kg_dir+self.filename+'.npy')
-        if stock_index is not None:
-            self.filename += ('_'+ company[stock_index])
+        self.filename += ('_'+ company[stock_index])
 
         #print(self.kg_data.shape)
         #self.kg_data = np.zeros(self.ts_data.shape)
 
-        self.batch_size = self.ts_data.shape[0] # Fixed batch size (can be changed)
+        self.batch_size = 32 # Fixed batch size (can be changed)
 
         self.seq = self.parameters['seq_len']
-        self.total = math.ceil((self.ts_data.shape[1] - self.seq)/32)# 60-20-20 Split
+        self.total = math.ceil((self.ts_data.shape[0] - self.seq)/32)# 60-20-20 Split
         self.valid_index = math.ceil(self.total*0.6)
         self.test_index = math.ceil(self.total*0.8)
 
     def get_batch(self, batch_index):
-        ts_data=[]
-        kg_data=[]
-        gt_data=[]
-        batch_index = self.seq + self.batch_size*batch_index
+        batch_index = batch_index*self.batch_size+self.seq
+        ts_data=np.zeros((self.batch_size,self.seq,self.ts_data.shape[1]))
+        kg_data=np.zeros((self.batch_size,self.seq,self.kg_data.shape[1]))
+        gt_data=np.zeros((self.batch_size,self.gt_data.shape[1]))
         for i in range(self.batch_size):
-            ts_data.append(self.ts_data[batch_index - self.seq + i : batch_index + i,:])
-            kg_data.append(self.kg_data[batch_index - self.seq + i : batch_index + i,:])
-            gt_data.append(self.gt_data[batch_index + i])
-        print(np.stack(gt_data, axis=0).shape)
-        return np.stack(ts_data, axis=0),np.stack(kg_data, axis=0),np.stack(gt_data, axis=0)
+            if (batch_index + i) < self.ts_data.shape[0]:
+                ts_data[i,:,:] = self.ts_data[batch_index - self.seq + i : batch_index + i,:]
+                kg_data[i,:,:] = self.kg_data[batch_index - self.seq + i : batch_index + i,:]
+                gt_data[i,:] = self.gt_data[batch_index + i - 1]
+        return ts_data,kg_data,gt_data
 
                 #self.vec_data[:, batch_index - self.seq : batch_index, :, :], \
 
     def train(self):
-        device_name = '/gpu:0'
+        device_name = '/gpu:1'
         #device_name = 'cpu'
         print('device name:', device_name)
 
@@ -350,7 +349,8 @@ class LSTM_KG:
 
             ### TEST SET ###
             test_loss = 0.0
-            test_pred = np.zeros([self.ts_data.shape[1] - self.test_index, self.batch_size, 2], dtype=np.float32)
+            test_pred = np.zeros([self.total- self.test_index, self.batch_size, 2], dtype=np.float32)
+            y_true = np.zeros([self.total-self.test_index, self.batch_size, 2], dtype=np.float32)
             test_batch = 0
 
             for i in range(self.test_index, self.total):
@@ -367,11 +367,11 @@ class LSTM_KG:
                 curr_loss, curr_pred = sess.run((loss, prediction), feed_dict)
                 test_loss += curr_loss
                 test_pred[test_batch, :, :] = curr_pred
+                y_true[test_batch, :, :] = gt_batch
                 test_batch += 1
 
-
-            print('Test Loss:', test_loss / (self.ts_data.shape[1] - self.test_index) / self.batch_size)
-            y_true = np.argmax(self.gt_data[:, self.test_index:, :], 2).flatten()
+            print('Test Loss:', test_loss / (self.total - self.test_index) / self.batch_size)
+            y_true = np.argmax(y_true, 2).flatten()
             y_pred = np.argmax(np.transpose(test_pred, (1, 0, 2)), 2).flatten()
             test_acc = accuracy_score(y_true, y_pred)
             test_f1 = f1_score(y_true, y_pred)
@@ -382,11 +382,10 @@ class LSTM_KG:
             print('Took {:.3f}s.'.format(time.time() - t1))
             print()
 
-
             ### For tracking best performance ###
             if val_loss < best_valid_loss:
                 best_valid_loss = val_loss
-                best_acc = test_acc
+                best_acc = test_acc 
                 best_f1 = test_f1
                 best_pred = test_pred
 

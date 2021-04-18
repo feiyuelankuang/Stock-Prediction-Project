@@ -37,7 +37,7 @@ class LSTM:
     def get_batch(self, batch_index):
         return self.ts_data[:, batch_index - self.seq : batch_index, :], \
                 self.kg_data[:, batch_index - self.seq : batch_index, :], \
-                self.gt_data[:, batch_index]
+                self.gt_data[:, batch_index - 1]
 
                 #self.vec_data[:, batch_index - self.seq : batch_index, :, :], \
 
@@ -193,23 +193,16 @@ class LSTM:
             writer.writerow([best_acc,best_f1])
 
 class LSTM_KG:
-    def __init__(self, ts_dir, kg_dir, model, combine, parameters,stock_index=None):
+    def __init__(self, ts_dir, kg_dir, model, combine, parameters):
         self.parameters = parameters
         self.ts_data, self.gt_data = load_ts_data(ts_dir)
-        self.kg_data = load_kg_data(kg_dir+self.filename+'.npy')
-        if stock_index is not None:
-            self.kg_data = np.expand_dims(self.kg_data[stock_index],axis=0)
-            self.ts_data = np.expand_dims(self.ts_data[stock_index],axis=0)
-            self.gt_data = np.expand_dims(self.gt_data[stock_index],axis=0)
         self.kg_size = self.parameters['kg_size']
         self.hidden_size = self.parameters['hidden_size']
         model_dict={('TransE',True):'transE_combine', ('TransD',True):'transD_combine', ('TransE',False):'transE_KG', ('TransD',False):'transD_KG'}
         company = ['AAPL', 'BA', 'GOOG', 'MSFT', 'WMT']
         #print(model,combine)
         self.filename = model_dict[(model,combine)]
-        print(kg_dir+self.filename+'.npy')
-        if stock_index is not None:
-            self.filename += ('_'+ company[stock_index])
+        self.kg_data = load_kg_data(kg_dir+self.filename+'.npy')
 
         #print(self.kg_data.shape)
         #self.kg_data = np.zeros(self.ts_data.shape)
@@ -223,7 +216,7 @@ class LSTM_KG:
     def get_batch(self, batch_index):
         return self.ts_data[:, batch_index - self.seq : batch_index, :], \
                 self.kg_data[:, batch_index - self.seq : batch_index, :], \
-                self.gt_data[:, batch_index]
+                self.gt_data[:, batch_index-1]
 
                 #self.vec_data[:, batch_index - self.seq : batch_index, :, :], \
 

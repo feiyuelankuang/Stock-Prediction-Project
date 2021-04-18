@@ -41,6 +41,6 @@ if __name__ == '__main__':
     parser.add_argument("--combine",type=bool,default=False, help="combine feature or kg feature")
     parser.add_argument("--root",type=str, default= '../',help="root path")
     args = parser.parse_args()
-    for i in range(3):
+    for i in range(5):
         train_kg(root=args.root,model=args.model,combine=args.combine)
-        #train()
+        train()
