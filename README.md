@@ -7,24 +7,23 @@ report can be edit here https://www.overleaf.com/6175999788qykjydxqwhkb
 
 ## Getting Started
 
-### Prerequisites
+### Dependencies
+
 numpy
+
 panda
-tensorflow
-pytorch
-tenforflow_hub
+
 nltk
-### Installing
 
+tensorflow
 
+tenforflow_hub
 
-And repeat
+tensorflow_probability 
 
-```
-until finished
-```
+pytorch
 
-End with an example of getting some data out of the system or using it for a little demo
+sklearn
 
 ## Running the code
 
