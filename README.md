@@ -33,5 +33,5 @@ sklearn
 2. To build the model, firstly run python save_news_vector.py under kg_embedding folders
 
 
-3.Then under model folder, run python main.py --model '' --combine '' to train stock prediction model
+3. Under model folder, run python main.py to train stock prediction model for all stock or python main_single.py to train stock prediction model for single stock
 
