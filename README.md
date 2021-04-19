@@ -30,7 +30,7 @@ sklearn
 1. Before running the code, please download word2vec model from https://drive.google.com/file/d/0B7XkCwpI5KDYNlNUTTlSS21pQmM/edit, unzip it and put it under data folder
 
 
-2. To build the model, firstly run python save_news_vector.py under kg_embedding folders
+2. To build the model, firstly run python save_news_vector.py under kg_embedding folder to extract event embedding
 
 
 3. Under model folder, run python main.py to train stock prediction model for all stock or python main_single.py to train stock prediction model for single stock
